@@ -1,5 +1,5 @@
 Overview of Paper
-This paper analyzes the distribution of COVID-19 immunization clinics across Toronto. Specifically, it is looking at the relationship between the number of clinics, population, and income level for each ward.
+Analyzing Shelter Service Occupancy Capacity Rate in Toronto.
 
 File Structure
 The repo is structured as the following:
