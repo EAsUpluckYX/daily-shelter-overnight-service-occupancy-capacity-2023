@@ -1,4 +1,4 @@
-Overview of Paper
+Overview of Paper:
 Analyzing Shelter Service Occupancy Capacity Rate in Toronto.
 
 File Structure
