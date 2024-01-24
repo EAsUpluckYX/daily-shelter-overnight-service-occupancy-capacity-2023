@@ -1,0 +1,53 @@
+---
+title: "Test"
+author: 
+  - Shuyuan Zheng
+thanks: "Code and data are available at: https://github.com/EAsUpluckYX/daily-shelter-overnight-service-occupancy-capacity-2023"
+date: today
+date-format: long
+format: pdf
+prefer-html: true
+number-sections: true
+---
+
+
+```{r}
+library(opendatatoronto)
+library(dplyr)
+library(tidyverse)
+library(lubridate)
+library(knitr)
+library(kableExtra)
+
+
+set.seed(1007218397)
+```
+
+
+
+```{r}
+data<-  read_csv(file=here("inputs/data/raw_data.csv"))
+
+
+data$OCCUPANCY_DATE <- as.Date(data$OCCUPANCY_DATE)
+t1 <- !any(is.na(data$OCCUPANCY_DATE))
+
+
+t2 <- is.numeric(data$OCCUPANCY_RATE_ROOMS)
+
+
+t3 <- is.numeric(data_clean$OCCUPANCY_RATE_BEDS)
+
+
+t4 <- any(duplicated(data))
+
+
+t5 <- any(is.na(data))
+
+t1
+t2
+t3
+t4
+t5
+```
+

@@ -1,0 +1,42 @@
+---
+title: "Dowload_Data"
+author: 
+  - Shuyuan Zheng
+thanks: "Code and data are available at: https://github.com/EAsUpluckYX/daily-shelter-overnight-service-occupancy-capacity-2023"
+date: today
+date-format: long
+format: pdf
+prefer-html: true
+number-sections: true
+---
+
+```{r, echo=FALSE, message = FALSE, warning = FALSE}
+#| label: fig-bills
+#| fig-cap: Bills of penguins
+#| echo: false
+#| message: false
+#| warning: false
+
+library(opendatatoronto)
+library(dplyr)
+library(tidyverse)
+library(lubridate)
+library(knitr)
+library(kableExtra)
+library(here)
+
+# get package
+package <- show_package("21c83b32-d5a8-4106-a54f-010dbe49f6f2")
+
+# get all resources for this package
+resources <- list_package_resources("21c83b32-d5a8-4106-a54f-010dbe49f6f2")
+
+# identify datastore resources; by default, Toronto Open Data sets datastore resource format to CSV for non-geospatial and GeoJSON for geospatial resources
+datastore_resources <- filter(resources, tolower(format) %in% c('csv', 'geojson'))
+
+# load the first datastore resource as a sample
+data <- filter(datastore_resources, row_number()==2) %>% get_resource()
+
+file_path <- here("inputs", "data", "raw_data.csv")
+write.csv(data, file = file_path, row.names = FALSE)
+```

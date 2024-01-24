@@ -1,0 +1,135 @@
+---
+title: "Simulate_Data"
+author: 
+  - Shuyuan Zheng
+thanks: "Code and data are available at: https://github.com/EAsUpluckYX/daily-shelter-overnight-service-occupancy-capacity-2023"
+date: today
+date-format: long
+format: pdf
+prefer-html: true
+number-sections: true
+---
+
+```{r}
+
+library(dplyr)
+library(tidyverse)
+library(lubridate)
+library(knitr)
+library(kableExtra)
+library(here)
+```
+
+```{r}
+
+traindata <-  read_csv(file=here("outputs/data/data_clean.csv"))
+set.seed(1007218397)
+traindata <- sample_n(traindata, size = 500)
+
+glimpse(traindata)
+
+```
+
+```{r,echo=FALSE}
+
+qqnorm(traindata$OCCUPANCY_RATE_BEDS, main = "Figure 1:Normal Q-Q Plot of OCCUPANCY_RATE_BEDS in traindata",pch = 1, frame = FALSE)
+qqline(traindata$OCCUPANCY_RATE_BEDS, col = "red", lwd = 2)
+```
+```{r, echo=FALSE, message = FALSE, warning = FALSE}
+
+#| echo: false
+#| eval: true
+#| message: false
+#| warning: false
+
+
+monthly_room_occupancy_rate <- traindata %>%
+  filter(CAPACITY_TYPE == "Room Based Capacity") %>%
+  group_by(month) %>%
+  summarise(average_room_occupancy_rate = mean(OCCUPANCY_RATE_ROOMS, na.rm = TRUE), .groups = "drop")
+
+
+monthly_bed_occupancy_rate <- traindata %>%
+  filter(CAPACITY_TYPE == "Bed Based Capacity") %>%
+  group_by(month) %>%
+  summarise(average_bed_occupancy_rate = mean(OCCUPANCY_RATE_BEDS, na.rm = TRUE), .groups = "drop")
+
+
+
+combined_occupancy_rate <- full_join(monthly_room_occupancy_rate, monthly_bed_occupancy_rate, by = "month")
+
+combined_table
+
+```
+
+
+
+```{r, echo=FALSE}
+#| echo: false
+#| eval: true
+#| message: false
+#| warning: false
+
+
+
+room_plot <- ggplot(monthly_room_occupancy_rate, aes(x = month, y = average_room_occupancy_rate)) +
+  geom_line() +
+  geom_point() +
+  geom_text(aes(label = round(average_room_occupancy_rate, 2)), vjust = -0.5) +
+  scale_x_date(date_labels = "%b", date_breaks = "1 month") +
+  labs(title = "Figure 2:Average Room Occupancy Rate by Month", x = "Month", y = "Average Room Occupancy Rate (%)") +
+  theme_minimal()
+room_plot 
+
+
+bed_plot <- ggplot(monthly_bed_occupancy_rate, aes(x = month, y = average_bed_occupancy_rate)) +
+  geom_line() +
+  geom_point() +
+  geom_text(aes(label = round(average_bed_occupancy_rate, 2)), vjust = -0.5) +
+  scale_x_date(date_labels = "%b", date_breaks = "1 month") +
+  labs(title = "Figure 3:Average Bed Occupancy Rate by Month", x = "Month", y = "Average Bed Occupancy Rate (%)") +
+  theme_minimal()
+bed_plot 
+```
+
+```{r,echo=FALSE}
+#| echo: false
+#| eval: true
+#| message: false
+#| warning: false
+
+
+monthly_room_occupancy_rate_filtered <- traindata %>%
+  filter(PROGRAM_MODEL %in% c("Emergency", "Transitional")) %>%
+  group_by(PROGRAM_MODEL, month) %>%
+  summarise(average_room_occupancy_rate = mean(OCCUPANCY_RATE_ROOMS, na.rm = TRUE))
+
+
+ggplot(monthly_room_occupancy_rate_filtered, aes(x = month, y = average_room_occupancy_rate, color = PROGRAM_MODEL)) +
+  geom_line() +
+  geom_point() +
+  geom_text(aes(label = round(average_room_occupancy_rate, 2)), vjust = -0.5) +
+  scale_x_date(date_labels = "%b", date_breaks = "1 month") +
+  labs(title = "Figure 4:Average Monthly Room Occupancy Rate by Program Model", x = "Month", y = "Figure 4:Average Room Occupancy Rate (%)", color = "Program Model") +
+  theme_minimal()
+
+
+
+monthly_bed_occupancy_rate_filtered <- traindata %>%
+  filter(PROGRAM_MODEL %in% c("Emergency", "Transitional")) %>%
+  group_by(PROGRAM_MODEL, month) %>%
+  summarise(average_bed_occupancy_rate = mean(OCCUPANCY_RATE_BEDS, na.rm = TRUE))
+
+
+ggplot(monthly_bed_occupancy_rate_filtered, aes(x = month, y = average_bed_occupancy_rate, color = PROGRAM_MODEL)) +
+  geom_line() +
+  geom_point() +
+  geom_text(aes(label = round(average_bed_occupancy_rate, 2)), vjust = -0.5) +
+  scale_x_date(date_labels = "%b", date_breaks = "1 month") +
+  labs(title = "Figure 5:Average Monthly Bed Occupancy Rate by Program Model", x = "Month", y = "Average Bed Occupancy Rate (%)", color = "Program Model") +
+  theme_minimal()
+
+```
+
+
+

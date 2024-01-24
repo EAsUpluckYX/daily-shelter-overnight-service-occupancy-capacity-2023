@@ -1,0 +1,52 @@
+---
+title: "Data_Clean"
+author: 
+  - Shuyuan Zheng
+thanks: "Code and data are available at: https://github.com/EAsUpluckYX/daily-shelter-overnight-service-occupancy-capacity-2023"
+date: today
+date-format: long
+format: pdf
+prefer-html: true
+number-sections: true
+---
+
+```{r, echo=FALSE, message = FALSE, warning = FALSE}
+#| include: false
+#| warning: false
+#| message: false
+library(tidyverse)
+library(knitr)
+library(tinytex)
+library(opendatatoronto)
+library(lubridate)
+library(here)
+
+```
+
+
+```{r}
+#| echo: false
+#| message: false
+#| warning: false
+
+data<-  read_csv(file=here("inputs/data/raw_data.csv"))
+```
+
+
+```{r}
+#| echo: false
+#| message: false
+#| warning: false
+#data clean process
+data_clean <- select(data, OCCUPANCY_DATE, PROGRAM_MODEL, CAPACITY_TYPE, OCCUPANCY_RATE_ROOMS, OCCUPANCY_RATE_BEDS)
+data_clean$OCCUPANCY_DATE <- as.Date(data_clean$OCCUPANCY_DATE)
+data_clean$OCCUPANCY_RATE_ROOMS <- as.numeric(as.character(data_clean$OCCUPANCY_RATE_ROOMS))
+data_clean$OCCUPANCY_RATE_BEDS <- as.numeric(as.character(data_clean$OCCUPANCY_RATE_BEDS))
+data_clean$month <- floor_date(data_clean$OCCUPANCY_DATE, "month")
+data_clean <- data_clean[!duplicated(data_clean), ]
+
+
+
+file_path <- here("outputs", "data", "data_clean.csv")
+write.csv(data_clean, file = file_path, row.names = FALSE)
+```
