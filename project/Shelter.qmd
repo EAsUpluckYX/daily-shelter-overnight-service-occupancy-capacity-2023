@@ -26,7 +26,6 @@ library(kableExtra)
 library(here)
 
 data_clean <-  read_csv(file=here("outputs/data/data_clean.csv"))
-
 ```
 
 
