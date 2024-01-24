@@ -14,3 +14,6 @@ How to Run
 Run scripts/Download_data.qmd to download raw data
 Run scripts/Data_Processing.qmd to generate cleaned data
 Run outputs/paper/shelter.qmd to generate the PDF of the paper
+
+LLM Statement: Yes. GPT For debugging, Grammarly for grammar checking
+This is link of chat history: https://chat.openai.com/share/ea0d3cec-edc4-4014-989d-d74389f27462
