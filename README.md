@@ -13,7 +13,7 @@ contains cleaned data,
 # project 
 contains the R scripts used to simulate, download, clean data ,and generate the pdf of the paper
 
-##H ow to Run:
+## How to Run:
 ### Run project/Download_data.qmd to download raw data;
 ### Run project/Data_Processing.qmd to generate cleaned data;
 ### Run project/shelter.qmd to generate the PDF of the paper;
