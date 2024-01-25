@@ -1,0 +1,224 @@
+---
+title: "Analyzing Shelter Service Occupancy Capacity in Toronto"
+subtitle: "Exploring the Demand and Occupancy Rates in Toronto's Homeless Shelters During the First Half of 2023"
+author: 
+  - Shuyuan Zheng
+thanks: "Code and data are available at: https://github.com/EAsUpluckYX/daily-shelter-overnight-service-occupancy-capacity-2023."
+date: today
+date-format: long
+abstract: "After the pandemic, the issues of homelessness and housing in the City of Toronto remain severe. We often come across tents of homeless people and beggars on the streets. By studying this data from the first half of 2023, I will observe the occupancy rates of shelters. I have identified a trend of increasing actual occupancy rates over time for two types of shelters. This paper attempts to visualize these trends and tries to extract real meaning from the data."
+format: pdf
+prefer-html: true
+number-sections: true
+---
+
+```{r, echo=FALSE, message = FALSE, warning = FALSE}
+#| include: false
+#| warning: false
+#| message: false
+library(tidyverse)
+library(knitr)
+library(tinytex)
+library(opendatatoronto)
+library(dplyr)
+library(lubridate)
+library(kableExtra)
+library(here)
+
+data_clean <-  read_csv(file=here("outputs/data/data_clean.csv"))
+
+```
+
+
+
+# Introduction
+
+
+The homeless community in Toronto has been growing for decades. After the pandemic, as the economy started to recover, fast rising inflation made life harder for more and more people. This isn't the only problem. The city's population is growing faster than new homes are being built. Other issues like unemployment, broken families, domestic violence, mental illness, poor health, and drug use also contribute to more people becoming homeless.
+
+As more people in Toronto are forced out of the city, the number of people without homes keeps increasing. This has led to an all-time high in homelessness, with more people needing social housing, shelter services, and other kinds of help. In my study, I looked at data from Toronto's shelters. I focused on two types of shelters: one that provides beds and another that provides rooms. I also looked at two kinds of programs: the Emergency program, which anyone without a home can use, with or without a referral, and the Transitional program, which offers special services and is only for certain people who are referred. Overall, the data shows that in the first half of 2023, these shelters were almost always full, with their usage steadily increasing.
+
+
+# Data {#sec-data}
+
+This dataset which is download from opendatatoronto offers a daily rundown of active overnight shelters and associated services from the Shelter Management Information System (SMIS) database, managed by the Shelter, Support and Housing Administration (SSHA). It delivers daily updated information about shelters and overnight service programs under SSHA, including details about the operator, location, type, occupancy rates, and capacity of each program.
+
+## Description
+
+This paper utilizes data sourced from the City of Toronto Open Data Portal, specifically titled "Daily Shelter & Overnight Service Occupancy & Capacity." I employed the R package opendatatoronto (Gelfand 2020) to load the data in an R-script named "Data Acquisition and Processing." This data, uploaded and funded by the City of Toronto, is updated daily. This report modifies and refines the approach used in the Daily Shelter Occupancy dataset, beginning with the current year's data for 2021. This updated dataset includes the following revisions: types of overnight service, types of capacity, and two measures of capacity. The data provides daily updated information about shelters and overnight service programs managed by SSHA, including details on the program's operator, location, classification, occupancy rate, and capacity. The part I chose is starting from January 1, 2023.
+
+## Processing
+
+To effectively process the data, it was necessary to load essential libraries such as opendatatoronto (Gelfand 2020) for importing data into R (R Core Team 2020), along with the lubridate package (Grolemund and Wickham 2011) for handling date data. Additionally, I tackled the complex and NA-ridden occupancy rate data by transforming its type twice to ensure that numbers after the decimal point were not disregarded.
+For visualizing data and creating tables, I also utilized libraries including knitr (Xie 2021), tidyverse (Wickham et al. 2019), tidyr (Wickham 2021), and dplyr (Wickham 2021).
+
+Occupancy Rate is a metric used to measure the degree of utilization of a resource, such as hotel rooms, beds, office spaces, etc. It is typically expressed as a percentage, calculated by dividing the number of resources used during a specific period by the total number of available resources. In this field, it can reflect the management condition of shelters, but it also indicates the level of resource utilization.
+I filtered the data_clean dataset to include entries where the capacity type is "Room Based Capacity." Then, I group the data by month and calculating the average room occupancy rate, ignoring any missing values. 
+Similarly, my filter data_clean for "Bed Based Capacity," group by month, and calculate the average bed occupancy rate, again excluding missing values. 
+
+As shown in the table 1, starting from January 1, 2023, the actual occupancy rate for rooms is high every month. The highest point is in July, when there are almost no vacant rooms. The actual occupancy rate for bed based is slightly lower than it for room based. However, the occupancy rate for beds is high as well.
+```{r}
+#| label: table-1
+#| echo: false
+#| warning: false
+#| render: asis
+#| tbl-cap: "Average Monthly Occupancy Rates for Room and Bed Based Capacity"
+
+
+# Calculation of Monthly Average Occupancy Rate for Room Based Capacity
+monthly_room_occupancy_rate <- data_clean %>%
+  filter(CAPACITY_TYPE == "Room Based Capacity") %>%
+  group_by(month) %>%
+  summarise(average_room_occupancy_rate = mean(OCCUPANCY_RATE_ROOMS, na.rm = TRUE), .groups = "drop")
+
+# Calculation of Monthly Average Occupancy Rate for Bed Based Capacity
+monthly_bed_occupancy_rate <- data_clean %>%
+  filter(CAPACITY_TYPE == "Bed Based Capacity") %>%
+  group_by(month) %>%
+  summarise(average_bed_occupancy_rate = mean(OCCUPANCY_RATE_BEDS, na.rm = TRUE), .groups = "drop")
+
+
+# Create a Table and Change Its Style
+combined_occupancy_rate <- full_join(monthly_room_occupancy_rate, monthly_bed_occupancy_rate, by = "month")
+
+combined_occupancy_rate <- combined_occupancy_rate %>%
+  rename(Room = average_room_occupancy_rate, Bed = average_bed_occupancy_rate, Start_Date = month)
+
+combined_table <- kable(combined_occupancy_rate, format = "html") %>%
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed"), full_width = F, 
+                html_font = "Arial") %>%
+  column_spec(1, bold = TRUE,) %>%
+  column_spec(2:3, width = "12em") %>%
+  add_header_above(c(" " = 1, "Occupancy Rates" = 2)) %>%
+  row_spec(0, font_size = 14, align = "right")
+
+# Print
+combined_table
+```
+# Visualizing
+
+ Upon initial observation of the table 1, I became intrigued by the changing trends in occupancy rates for rooms and beds. Using tidyverse (Wickham et al. 2019), I created two charts to represent the changes in occupancy rates for both room-based and bed-based accommodations. 
+
+## Trend
+
+In this chart (Figure 1), we can see that the occupancy rate in shelters for rooms shows a clear upward trend in the first half of 2023, although there is a brief dip in April. Even in April, the average occupancy rate does not fall below 90 percent.
+```{r}
+#| label: fig-room-1
+#| echo: false
+#| warning: false
+#| render: asis
+#| fig-cap: "Firgue1. Average Room Occupancy Rate by Month"
+
+
+# Create a figure
+room_plot <- ggplot(monthly_room_occupancy_rate, aes(x = month, y = average_room_occupancy_rate)) +
+  geom_line() +
+  geom_point() +
+  geom_text(aes(label = round(average_room_occupancy_rate, 2)), vjust = -0.5) +
+  scale_x_date(date_labels = "%b", date_breaks = "1 month") +
+  labs(title = "Figure 1. Average Room Occupancy Rate by Month", x = "Month", y = "Average Room Occupancy Rate (%)") +
+  theme_minimal()
+room_plot 
+```
+
+In the second chart(Figure 2), we can observe that the occupancy rate for beds in shelters is around 90 percent for the first half of 2023. Although there was a declining trend in May and June, the rate rebounded back above 90 percent in July.
+```{r}
+#| label: fig-bed-1
+#| echo: false
+#| warning: false
+#| render: asis
+#| fig-cap: "Firgue2. Average bed Occupancy Rate by Month"
+
+# Create a figure
+bed_plot <- ggplot(monthly_bed_occupancy_rate, aes(x = month, y = average_bed_occupancy_rate)) +
+  geom_line() +
+  geom_point() +
+  geom_text(aes(label = round(average_bed_occupancy_rate, 2)), vjust = -0.5) +
+  scale_x_date(date_labels = "%b", date_breaks = "1 month") +
+  labs(title = "Figure 2. Average Bed Occupancy Rate by Month", x = "Month", y = "Average Bed Occupancy Rate (%)") +
+  theme_minimal()
+bed_plot 
+```
+
+Between March and June, both bed and room actual occupancy rates experienced a period of decline, which could be attributed to factors such as changes in sanitary conditions, wear and tear of furniture, or a temporary shift in the employment environment. However, overall, high occupancy rates typically signify efficient utilization of resources, but they also indicate that the overall resources of the shelter are under significant strain.
+
+## Factors
+
+Two new variables are introduced to classify shelter programs as either emergency or transitional.
+Emergency: Accessible to any homeless individual or family under any circumstances.
+Transitional: Available only to eligible homeless individuals and families, and access requires approval.
+
+
+In Figure 3, we can observe that the trends for both transitional and emergency programs in room-based shelters are consistent. It noticed that room-based capacity is typically used for family programs or hotel-based plans, where individuals from different families do not share bedrooms. This may indicate that the homeless community, particularly families, is on the rise, whether due to emergency situations or due to housing or economic pressures.
+
+In Figure 4, we can see that the trends for transitional and emergency programs in room-based shelters are not consistent. Programs that measure occupancy rates by beds are typically applicable to projects with communal sleeping areas. This might suggest that the growth in the homeless population, particularly among individuals, is due to a variety of reasons.
+```{r}
+#| echo: false
+#| eval: true
+#| message: false
+#| warning: false
+
+# Classified by PROGRAM_MODEL for room based monthly occupancy rate
+monthly_room_occupancy_rate_filtered <- data_clean %>%
+  filter(PROGRAM_MODEL %in% c("Emergency", "Transitional")) %>%
+  group_by(PROGRAM_MODEL, month) %>%
+  summarise(average_room_occupancy_rate = mean(OCCUPANCY_RATE_ROOMS, na.rm = TRUE))
+
+# Create a figure
+ggplot(monthly_room_occupancy_rate_filtered, aes(x = month, y = average_room_occupancy_rate, color = PROGRAM_MODEL)) +
+  geom_line() +
+  geom_point() +
+  geom_text(aes(label = round(average_room_occupancy_rate, 2)), vjust = -0.5) +
+  scale_x_date(date_labels = "%b", date_breaks = "1 month") +
+  labs(title = "Figure 3. Average Monthly Room Occupancy Rate by Program Model", x = "Month", y = "Average Room Occupancy Rate (%)", color = "Program Model") +
+  theme_minimal()
+
+
+# Classified by PROGRAM_MODEL for room based monthly occupancy rate
+monthly_bed_occupancy_rate_filtered <- data_clean %>%
+  filter(PROGRAM_MODEL %in% c("Emergency", "Transitional")) %>%
+  group_by(PROGRAM_MODEL, month) %>%
+  summarise(average_bed_occupancy_rate = mean(OCCUPANCY_RATE_BEDS, na.rm = TRUE))
+
+# Create a figure
+ggplot(monthly_bed_occupancy_rate_filtered, aes(x = month, y = average_bed_occupancy_rate, color = PROGRAM_MODEL)) +
+  geom_line() +
+  geom_point() +
+  geom_text(aes(label = round(average_bed_occupancy_rate, 2)), vjust = -0.5) +
+  scale_x_date(date_labels = "%b", date_breaks = "1 month") +
+  labs(title = "Figure 4. Average Monthly Bed Occupancy Rate by Program Model", x = "Month", y = "Average Bed Occupancy Rate (%)", color = "Program Model") +
+  theme_minimal()
+
+```
+# Limitation
+
+Due to limitations of the OpendataAPI, I found that I could only download datasets comprising a total of 32,000 data points. In this dataset, I could only study data from January to August, which might have some impact on trend analysis. Furthermore, factors like age, region, and the environment within shelters could also affect the actual occupancy rates.
+
+# Conclusion
+In summary, the analysis focused on the occupancy rate of room-based and bed-based shelters in Toronto, particularly considering the positive trends related to transitional and emergency shelter programs. 
+
+High occupancy rates may indicate a large population lacking stable housing, a clear indicator of urban homelessness issues. The increased demand for transitional and emergency shelters reflects the importance of social safety nets, such as temporary housing support, financial assistance, and health services. Analyzing these trends helps administrators understand which programs are effective and which areas require more support and resources.
+
+# Reference
+
+Gelfand, Sharla. 2020. Opendatatoronto: Access the City of Toronto Open Data Portal.
+
+Grolemund, Garrett, and Hadley Wickham. 2011. “Dates and Times Made Easy with lubridate.” Journal of
+Statistical Software 40 (3): 1–25. https://www.jstatsoft.org/v40/i03/.
+
+Müller, Kirill. 2021. here: A Simpler Way to Find Your Files. https://CRAN.R-project.org/package=here.
+
+R Core Team. 2020. R: A Language and Environment for Statistical Computing. Vienna, Austria: R
+Foundation for Statistical Computing. https://www.R-project.org/.
+
+Wickham, Hadley. 2021. Tidyr: Tidy Messy Data.
+Wickham, Hadley, Mara Averick, Jennifer Bryan, Winston Chang, Lucy D’Agostino McGowan, Romain
+François, Garrett Grolemund, et al. 2019. “Welcome to the tidyverse.” Journal of Open Source Software
+4 (43): 1686. https://doi.org/10.21105/joss.01686.
+
+Xie, Yihui. 2021. Knitr: A General-Purpose Package for Dynamic Report Generation in r. https://yihui.org/
+knitr/.
+
+Zhu, Hao. 2021. kableExtra: Construct Complex Table with 'kable' and Pipe Syntax. https://CRAN.R-project.org/package=kableExtra.
+
+
