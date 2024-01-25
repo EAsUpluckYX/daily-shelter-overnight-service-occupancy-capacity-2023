@@ -15,7 +15,7 @@ contains the R scripts used to simulate, download, clean data
 
 ## How to Run:
 ### Run scripts/01_Download_data.qmd to download raw data;
-### Run scripts/04_Data_Processing.qmd to generate cleaned data;
+### Run scripts/04_Data_Processing.qmd to generate processed data;
 ### Run outputs/paper/shelter.qmd to generate the PDF of the paper;
 
 - LLM Statement: Yes. GPT For debugging, Grammarly for grammar checking
