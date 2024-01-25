@@ -1,7 +1,7 @@
 # Overview of Paper:
 Analyzing Shelter Service Occupancy Capacity Rate in Toronto.
 
-## File Structure:
+# File Structure:
 The repo is structured as the following:
 
 ## inputs/data 
@@ -14,9 +14,9 @@ contains cleaned data,
 contains the R scripts used to simulate, download, clean data
 
 ## How to Run:
-### Run #### scripts/01_Download_data.qmd to download raw data;
-### Run #### scripts/04_Data_Processing.qmd to generate cleaned data;
-### Run #### outputs/paper/shelter.qmd to generate the PDF of the paper;
+### Run scripts/01_Download_data.qmd to download raw data;
+### Run scripts/04_Data_Processing.qmd to generate cleaned data;
+### Run outputs/paper/shelter.qmd to generate the PDF of the paper;
 
 - LLM Statement: Yes. GPT For debugging, Grammarly for grammar checking
 - This is the link to chat history: https://chat.openai.com/share/ea0d3cec-edc4-4014-989d-d74389f27462
