@@ -22,7 +22,7 @@ library(here)
 
 ```{r}
 
-traindata <-  read_csv(file=here("outputs/data/data_clean.csv"))
+traindata <-  read_csv(file=here("inputs/data/raw_data.csv"))
 set.seed(1007218397)
 traindata <- sample_n(traindata, size = 500)
 
